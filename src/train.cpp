@@ -1,103 +1,91 @@
+// Copyright 2022 NNTU-CS
 #include "../include/train.h"
 
-Train::Train() : countOp(0), first(nullptr), trainLength(0) {}
+Train::Train() : countOp(0), first(nullptr) {}
 
 Train::~Train() {
-    if (!first) return;
-
-    Car* current = first;
-    Car* nextCar = nullptr;
-
-    do {
-        nextCar = current->next;
-        delete current;
-        current = nextCar;
-    } while (current != first);
+  if (!first) return;
+  Car* current = first;
+  Car* nextCar = nullptr;
+  do {
+    nextCar = current->next;
+    delete current;
+    current = nextCar;
+  } while (current != first);
 }
 
 void Train::addCar(bool light) {
-    Car* newCar = new Car(light);
-
-    if (!first) {
-        first = newCar;
-        first->next = first;
-        first->prev = first;
-    } else {
-        Car* last = first->prev;
-        last->next = newCar;
-        newCar->prev = last;
-        newCar->next = first;
-        first->prev = newCar;
-    }
-
-    trainLength++;
+  Car* newCar = new Car(light);
+  if (!first) {
+    first = newCar;
+    first->next = first;
+    first->prev = first;
+  } else {
+    Car* last = first->prev;
+    last->next = newCar;
+    newCar->prev = last;
+    newCar->next = first;
+    first->prev = newCar;
+  }
 }
 
 int Train::getLength() {
-    if (!first) return 0;
-
-    // Алгоритм: идем вперед, выключаем свет, ищем включенный вагон
-    // Классическое решение задачи о поезде
-
-    countOp = 0;  // обнуляем счетчик операций
-
-    // Сначала выключаем свет в текущем вагоне (если он включен)
-    first->light = false;
-
-    int steps = 0;
-    Car* current = first;
-    
-    while (true) {
-        // Идем вперед на steps + 1 шагов
-        for (int i = 0; i <= steps; i++) {
-            current = current->next;
-            countOp++;  // каждый переход из вагона в вагон
-        }
-
-        // Проверяем, включен ли свет
-        if (current->light) {
-            // Нашли включенный вагон, выключаем его
-            current->light = false;
-
-            // Возвращаемся назад на steps + 1 шагов
-            for (int i = 0; i <= steps; i++) {
-                current = current->prev;
-                countOp++;
-            }
-
-            steps = 0;
-        } else {
-            // Свет выключен, продолжаем поиск
-            // Возвращаемся назад
-            for (int i = 0; i <= steps; i++) {
-                current = current->prev;
-                countOp++;
-            }
-
-            steps++;
-
-            // Если steps достиг длины поезда, значит мы все проверили
-            if (steps > trainLength) {
-                break;
-            }
-        }
+  if (!first) return 0;
+  countOp = 0;
+  // Классический алгоритм: идем вперед, выключаем свет,
+  // возвращаемся и увеличиваем шаг
+  int length = 0;
+  Car* current = first;
+  // Выключаем свет в текущем вагоне
+  current->light = false;
+  bool found = false;
+  while (!found) {
+    length++;
+    // Идем вперед на length шагов
+    for (int i = 0; i < length; i++) {
+      current = current->next;
+      countOp++;
     }
-
-    // Включим свет в первом вагоне обратно для корректности
-    first->light = true;
-
-    // Длина поезда = steps
-    return steps;
+    // Проверяем состояние
+    if (!current->light) {
+      // Свет выключен - возвращаемся
+      for (int i = 0; i < length; i++) {
+        current = current->prev;
+        countOp++;
+      }
+    } else {
+      // Нашли включенный свет
+      current->light = false;
+      // Возвращаемся и ищем дальше
+      for (int i = 0; i < length; i++) {
+        current = current->prev;
+        countOp++;
+      }
+      length = 0;
+    }
+    // Проверяем, все ли вагоны проверены
+    bool allOff = true;
+    Car* check = first;
+    for (int i = 0; i <= length; i++) {
+      if (check->light) {
+        allOff = false;
+        break;
+      }
+      check = check->next;
+    }
+    if (allOff && length > 0) {
+      found = true;
+    }
+  }
+  // Восстанавливаем состояние
+  first->light = true;
+  return length;
 }
 
 int Train::getOpCount() {
-    return countOp;
+  return countOp;
 }
 
 void Train::resetOpCount() {
-    countOp = 0;
-}
-
-int Train::getRealLength() {
-    return trainLength;
+  countOp = 0;
 }
