@@ -1,10 +1,41 @@
+// Copyright 2022 NNTU-CS
+#include "../include/train.h"
+
+Train::Train() : countOp(0), first(nullptr) {}
+
+Train::~Train() {
+  if (!first) return;
+  Car* current = first;
+  Car* nextCar = nullptr;
+  do {
+    nextCar = current->next;
+    delete current;
+    current = nextCar;
+  } while (current != first);
+}
+
+void Train::addCar(bool light) {
+  Car* newCar = new Car(light);
+  if (!first) {
+    first = newCar;
+    first->next = first;
+    first->prev = first;
+  } else {
+    Car* last = first->prev;
+    last->next = newCar;
+    newCar->prev = last;
+    newCar->next = first;
+    first->prev = newCar;
+  }
+}
+
 int Train::getLength() {
   if (!first) return 0;
   countOp = 0;
 
   // Сохраняем начальное состояние
   bool initialState = first->light;
-  
+
   // Выключаем свет в первом вагоне
   first->light = false;
 
@@ -43,4 +74,12 @@ int Train::getLength() {
   first->light = initialState;
 
   return allOff ? length : 0;
+}
+
+int Train::getOpCount() {
+  return countOp;
+}
+
+void Train::resetOpCount() {
+  countOp = 0;
 }
