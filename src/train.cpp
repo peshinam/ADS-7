@@ -33,47 +33,55 @@ int Train::getLength() {
   if (!first) return 0;
   countOp = 0;
 
-  // Сохраняем начальное состояние
-  bool initialState = first->light;
+  int length = 0;
+  Car* current = first;
 
-  // Выключаем свет в первом вагоне
+  // Выключаем свет в текущем вагоне
   first->light = false;
 
-  int length = 1;
-  Car* current = first->next;
-  countOp++;
-
-  // Идем по кругу, пока не вернемся в начало
-  while (current != first) {
-    // Если нашли включенный свет - выключаем и начинаем с начала
-    if (current->light) {
-      current->light = false;
-      length = 1;
-      current = first->next;
-      countOp++;
-      continue;
+  while (true) {
+    // Идем вперед на length+1 шагов
+    for (int i = 0; i <= length; i++) {
+      current = current->next;
+      countOp++;  // каждый переход увеличиваем счетчик
     }
 
-    length++;
-    current = current->next;
-    countOp++;
-  }
+    if (current->light) {
+      // Нашли включенный свет
+      current->light = false;
+      // Возвращаемся назад
+      for (int i = 0; i <= length; i++) {
+        current = current->prev;
+        countOp++;
+      }
+      length = 0;
+    } else {
+      // Возвращаемся назад
+      for (int i = 0; i <= length; i++) {
+        current = current->prev;
+        countOp++;
+      }
+      length++;
+    }
 
-  // Проверяем, все ли вагоны имеют выключенный свет
-  bool allOff = true;
-  Car* check = first->next;
-  for (int i = 1; i < length; i++) {
-    if (check->light) {
-      allOff = false;
+    // Проверяем, все ли вагоны выключены
+    bool allOff = true;
+    Car* check = first;
+    for (int i = 0; i < length; i++) {
+      if (check->light) {
+        allOff = false;
+        break;
+      }
+      check = check->next;
+    }
+
+    if (allOff && length > 0) {
       break;
     }
-    check = check->next;
   }
 
-  // Восстанавливаем начальное состояние
-  first->light = initialState;
-
-  return allOff ? length : 0;
+  first->light = true;
+  return length;
 }
 
 int Train::getOpCount() {
