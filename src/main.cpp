@@ -32,7 +32,7 @@ Train* createTrain(int length, int type) {
 
 int64_t measureOperations(int length, int type) {
   Train* train = createTrain(length, type);
-  train->getLength();
+  int len = train->getLength();
   int64_t operations = train->getOpCount();
   delete train;
   return operations;
@@ -65,27 +65,26 @@ int main() {
     }
     dataFile.close();
   }
-  // Создание Gnuplot скрипта
   std::ofstream script("plot.gp");
   script << "set terminal pngcairo size 1024,768\n";
   script << "set output 'result/plot.png'\n";
-  script << "set title 'Зависимость операций от длины поезда'\n";
-  script << "set xlabel 'Длина поезда'\n";
-  script << "set ylabel 'Количество операций'\n";
+  script << "set title 'Dependence of operations on train length'\n";
+  script << "set xlabel 'Train length (number of cars)'\n";
+  script << "set ylabel 'Number of operations (transitions)'\n";
   script << "set grid\n";
   script << "set key left top\n";
   script << "plot 'result/data.txt' using 1:2 with linespoints "
-         << "title 'Все выключены', \\\n";
+         << "title 'All off', \\\n";
   script << "     'result/data.txt' using 1:3 with linespoints "
-         << "title 'Все включены', \\\n";
+         << "title 'All on', \\\n";
   script << "     'result/data.txt' using 1:4 with linespoints "
-         << "title 'Случайные'\n";
+         << "title 'Random'\n";
   script.close();
   int ret = system("gnuplot plot.gp");
   if (ret == 0) {
-    std::cout << "График сохранен в result/plot.png\n";
+    std::cout << "Graph saved to result/plot.png\n";
   } else {
-    std::cout << "Gnuplot не найден, график не создан\n";
+    std::cout << "Gnuplot not found, graph not created\n";
   }
   return 0;
 }
