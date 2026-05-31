@@ -33,55 +33,66 @@ int Train::getLength() {
   if (!first) return 0;
   countOp = 0;
 
-  int length = 0;
+  // Классический алгоритм Дениса Шашина для задачи о поезде
+  int n = 0;  // предполагаемая длина
   Car* current = first;
 
   // Выключаем свет в текущем вагоне
   first->light = false;
-
+  
   while (true) {
-    // Идем вперед на length+1 шагов
-    for (int i = 0; i <= length; i++) {
+    // Увеличиваем предполагаемую длину
+    n++;
+
+    // Делаем n шагов вперед
+    for (int i = 0; i < n; i++) {
       current = current->next;
-      countOp++;  // каждый переход увеличиваем счетчик
+      countOp++;
     }
 
-    if (current->light) {
-      // Нашли включенный свет
-      current->light = false;
-      // Возвращаемся назад
-      for (int i = 0; i <= length; i++) {
+    // Проверяем свет в текущем вагоне
+    if (!current->light) {
+      // Свет выключен - возвращаемся на n шагов назад
+      for (int i = 0; i < n; i++) {
         current = current->prev;
         countOp++;
       }
-      length = 0;
     } else {
-      // Возвращаемся назад
-      for (int i = 0; i <= length; i++) {
+      // Нашли вагон с включенным светом
+      // Выключаем свет
+      current->light = false;
+
+      // Возвращаемся на n шагов назад
+      for (int i = 0; i < n; i++) {
         current = current->prev;
         countOp++;
       }
-      length++;
+
+      // Сбрасываем счетчик n
+      n = 0;
     }
 
-    // Проверяем, все ли вагоны выключены
-    bool allOff = true;
+    // Проверяем, все ли вагоны в пределах n имеют выключенный свет
+    bool all_off = true;
     Car* check = first;
-    for (int i = 0; i < length; i++) {
-      if (check->light) {
-        allOff = false;
+    for (int i = 0; i < n; i++) {
+      if (i > 0 && check->light) {
+        all_off = false;
         break;
       }
       check = check->next;
     }
 
-    if (allOff && length > 0) {
+    if (all_off && n > 0) {
+      // Нашли длину поезда
       break;
     }
   }
 
+  // Восстанавливаем свет в первом вагоне
   first->light = true;
-  return length;
+
+  return n;
 }
 
 int Train::getOpCount() {
