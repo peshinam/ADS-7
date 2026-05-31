@@ -1,10 +1,11 @@
 // Copyright 2022 NNTU-CS
 #include "../include/train.h"
-#include <iostream>
-#include <vector>
-#include <random>
-#include <fstream>
+
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <random>
+#include <vector>
 
 Train* createTrain(int length, int type) {
   Train* train = new Train();
@@ -29,10 +30,10 @@ Train* createTrain(int length, int type) {
   return train;
 }
 
-long long measureOperations(int length, int type) {
+int64_t measureOperations(int length, int type) {
   Train* train = createTrain(length, type);
   train->getLength();
-  long long operations = train->getOpCount();
+  int64_t operations = train->getOpCount();
   delete train;
   return operations;
 }
@@ -43,11 +44,11 @@ int main() {
   for (int i = 2; i <= 100; i += 2) {
     lengths.push_back(i);
   }
-  std::vector<long long> resultsAllOff;
-  std::vector<long long> resultsAllOn;
-  std::vector<long long> resultsRandom;
+  std::vector<int64_t> resultsAllOff;
+  std::vector<int64_t> resultsAllOn;
+  std::vector<int64_t> resultsRandom;
   for (int len : lengths) {
-    long long sumRandom = 0;
+    int64_t sumRandom = 0;
     for (int i = 0; i < 5; i++) {
       sumRandom += measureOperations(len, 2);
     }
@@ -80,7 +81,11 @@ int main() {
   script << "     'result/data.txt' using 1:4 with linespoints "
          << "title 'Случайные'\n";
   script.close();
-  system("gnuplot plot.gp");
-  std::cout << "График сохранен в result/plot.png\n";
+  int ret = system("gnuplot plot.gp");
+  if (ret == 0) {
+    std::cout << "График сохранен в result/plot.png\n";
+  } else {
+    std::cout << "Gnuplot не найден, график не создан\n";
+  }
   return 0;
 }
