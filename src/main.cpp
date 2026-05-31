@@ -14,16 +14,12 @@ Train* createTrain(int length, int type) {
   std::uniform_int_distribution<> dis(0, 1);
   for (int i = 0; i < length; i++) {
     bool lightState;
-    switch (type) {
-      case 0:
-        lightState = false;
-        break;
-      case 1:
-        lightState = true;
-        break;
-      default:
-        lightState = dis(gen) == 1;
-        break;
+    if (type == 0) {
+      lightState = false;
+    } else if (type == 1) {
+      lightState = true;
+    } else {
+      lightState = dis(gen) == 1;
     }
     train->addCar(lightState);
   }
@@ -47,6 +43,7 @@ int main() {
   std::vector<int64_t> resultsAllOff;
   std::vector<int64_t> resultsAllOn;
   std::vector<int64_t> resultsRandom;
+
   for (int len : lengths) {
     int64_t sumRandom = 0;
     for (int i = 0; i < 5; i++) {
@@ -56,6 +53,7 @@ int main() {
     resultsAllOn.push_back(measureOperations(len, 1));
     resultsRandom.push_back(sumRandom / 5);
   }
+
   std::ofstream dataFile("result/data.txt");
   if (dataFile.is_open()) {
     dataFile << "# Length AllOff AllOn Random\n";
@@ -65,6 +63,7 @@ int main() {
     }
     dataFile.close();
   }
+
   std::ofstream script("plot.gp");
   script << "set terminal pngcairo size 1024,768\n";
   script << "set output 'result/plot.png'\n";
@@ -80,11 +79,13 @@ int main() {
   script << "     'result/data.txt' using 1:4 with linespoints "
          << "title 'Random'\n";
   script.close();
+
   int ret = system("gnuplot plot.gp");
   if (ret == 0) {
     std::cout << "Graph saved to result/plot.png\n";
   } else {
     std::cout << "Gnuplot not found, graph not created\n";
   }
+
   return 0;
 }
